@@ -9,6 +9,7 @@ import RoundedButton from "../components/common/RoundedButton"
 import { DialogModal } from "../components/common/Modal"
 import { useToggle } from "react-use"
 import { QRCodeSVG } from "qrcode.react"
+import RoundedItem from "../components/RoundedItem"
 
 export const Asset = () => {
   const params = useParams()
@@ -27,7 +28,7 @@ export const Asset = () => {
     )
   return (
     <>
-      <div className=" container flex flex-col justify-center items-center gap-4 p-6 pt-20">
+      <div className=" container flex flex-col justify-center items-center gap-4 p-4 pt-20">
         <img alt="icon" src={data?.icon_url} width={64} height={64} />
         <div>
           {data?.symbol} ({data?.name})
@@ -67,7 +68,7 @@ const TransferViaMixinDialog = ({ isOpen, onDismiss }: { isOpen: boolean; onDism
 
   return (
     <DialogModal isOpen={isOpen} onDismiss={() => onDismiss()} containerClassName="gap-2">
-      <div>Transfer</div>
+      <div>Transfer via Mixin</div>
       <a href={address} className=" text-slate-500 text-center underline">
         {address}
       </a>
@@ -80,10 +81,11 @@ const Depositing = () => {
   const params = useParams()
   const assetId = params["assetId"]!
   const { data } = useAsset(assetId)
-  const { data: deposits } = useDeposits(
+  const { data: deposits = [] } = useDeposits(
     {
       asset: assetId,
       destination: data?.destination,
+      tag: data?.tag,
     } as unknown as DepositRequest,
     {
       enable: !!assetId && !!data?.destination,
@@ -114,16 +116,16 @@ const DepositItem = ({ data }: { data: ExternalTransactionResponse }) => {
   }, [data.created_at])
 
   return (
-    <div className="flex flex-row gap-2 items-center justify-between bg-white p-4 first:rounded-t-2xl last:rounded-2xl">
-      <div>
+    <RoundedItem className="justify-between">
+      <div className="font-semibold">
         {data.amount} {asset?.symbol}
       </div>
-      <div className="flex flex-col items-end ">
+      <div className="flex flex-col items-end text-sm text-slate-500 ">
         <div>
           {data.confirmations}/{data.threshold} confirmations
         </div>
         <div>{fromNow}</div>
       </div>
-    </div>
+    </RoundedItem>
   )
 }

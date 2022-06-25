@@ -36,7 +36,7 @@ export const ConnectModal = () => {
       <Row>
         <div>registered:</div>
         <RoundedButton disabled={isFetching || !isError} onClick={() => refetch()}>
-          {isError ? "registered" : isFetching ? "registering" : "register"}
+          {!!data ? "registered" : isFetching ? "registering" : "register"}
         </RoundedButton>
       </Row>
       <Row>

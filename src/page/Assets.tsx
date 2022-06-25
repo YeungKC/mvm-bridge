@@ -1,28 +1,26 @@
-import tw from "tailwind-styled-components"
 import { useTopAssets } from "../service/hook"
 import { Link } from "react-router-dom"
-
-const Item = tw(Link)`
-p-5
-bg-white
-flex
-flex-row
-gap-3
-first:rounded-t-2xl
-last:rounded-2xl
-`
+import RoundedItem from "../components/RoundedItem"
 
 export const Assets = () => {
   const { data } = useTopAssets()
 
   return (
-    <div className="container flex flex-col items-stretch py-20">
-      {data?.map((e, i) => (
-        <Item to={`/asset/${e.asset_id}`}>
-          <img alt="icon" src={e.icon_url} width={38} height={38} />
-          <div className="font-bold">{e.symbol}</div>
-        </Item>
-      ))}
+    <div className="container flex flex-col items-stretch p-4 py-20 gap-2">
+      <div>
+        <RoundedItem $as={Link} to={`/all-depositing`} className=" font-bold">
+          All Depositing
+        </RoundedItem>
+      </div>
+      <div className=" text-lg font-bold">Top Assets</div>
+      <div>
+        {data?.map((e, i) => (
+          <RoundedItem $as={Link} to={`/asset/${e.asset_id}`}>
+            <img alt="icon" src={e.icon_url} width={38} height={38} />
+            <div className="font-bold">{e.symbol}</div>
+          </RoundedItem>
+        ))}
+      </div>
     </div>
   )
 }

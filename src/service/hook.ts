@@ -1,12 +1,13 @@
-import { QueryClient, useInfiniteQuery, useQuery } from "react-query"
+import { QueryClient, useQueries, useQuery, useQueryClient } from "react-query"
 import { persistQueryClient } from "react-query/persistQueryClient-experimental"
 import { createWebStoragePersistor } from "react-query/createWebStoragePersistor-experimental"
 import axios from "axios"
 import { useAccount } from "wagmi"
-import { MixinApi } from "@mixin.dev/mixin-node-sdk"
+import { AssetResponse, MixinApi } from "@mixin.dev/mixin-node-sdk"
 import { DepositRequest } from "@mixin.dev/mixin-node-sdk/dist/client/types/external"
-import { flatten } from "lodash"
+import { difference, flatten, sortBy } from "lodash"
 import { useMemo } from "react"
+import dayjs from "dayjs"
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -29,7 +30,7 @@ persistQueryClient({
 export { queryClient }
 
 interface RegisteredUser {
-  created_at: Date
+  created_at: string
   full_name: string
   user_id: string
   session_id: string
@@ -107,6 +108,7 @@ export const useTopAssets = () => {
   const api = MixinApi()
   return useQuery(["topAsset"], () => api!.network.topAssets(), {
     cacheTime: Infinity,
+    staleTime: 1000 * 60 * 5,
     enabled: !!api,
   })
 }
@@ -116,18 +118,58 @@ export const useDeposits = (request: Partial<Omit<DepositRequest, "offset">>, { 
 
   const api = useMixinApi()
 
-  const result = useInfiniteQuery({
-    queryKey: ["deposits", data?.user_id, request],
-    queryFn: ({ pageParam }) => api!.external.deposits({ offset: pageParam, ...request, limit: request.limit || 500 } as unknown as DepositRequest),
-    getNextPageParam: (response) => (response.length ? response[response.length - 1].created_at : null),
+  return useQuery(["deposits", data?.user_id, request], () => api!.external.deposits({ ...request, limit: request.limit || 500 } as unknown as DepositRequest), {
     enabled: !!api && (enable ?? true),
-    refetchInterval: 1000 * 3,
+    refetchInterval: 1000 * 6,
   })
+}
 
-  const items = useMemo(() => flatten(result.data?.pages), [result.data?.pages])
+export const useCacheAssets = () => {
+  const { data: user } = useRegisteredUser()
+  const queries = useQueryClient().getQueryCache().findAll(["asset", user?.user_id])
 
-  return {
-    ...result,
-    data: items,
-  }
+  const assets = queries
+    .map((e) => e.state.data)
+    .filter((e) => !!e)
+    .map((e) => e as AssetResponse)
+
+  return assets
+}
+
+export const useAllDeposits = () => {
+  const api = useMixinApi()
+  const { data } = useRegisteredUser()
+
+  const cacheAssets = useCacheAssets()
+  const { data: assets = [] } = useAssets()
+
+  const requests = useMemo(
+    () =>
+      difference(
+        cacheAssets.concat(assets).map((e) => ({
+          asset: e.asset_id,
+          destination: e.destination,
+          tag: e.tag,
+        }))
+      ),
+    [cacheAssets, assets]
+  )
+
+  const queriesResults = useQueries(
+    requests.map((request) => {
+      return {
+        queryKey: ["deposits", data?.user_id, request],
+        queryFn: () => api!.external.deposits({ ...request, limit: 500 } as unknown as DepositRequest),
+        enabled: !!api && !!request?.destination,
+        refetchInterval: 1000 * 12,
+      }
+    })
+  )
+
+  return useMemo(() => {
+    const deposits = flatten(queriesResults.map((e) => e.data))
+      .filter((e) => !!e)
+      .map((e) => e!)
+    return sortBy(deposits, (e) => -dayjs(e.created_at).valueOf())
+  }, [queriesResults])
 }
