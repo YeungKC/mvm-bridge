@@ -18,7 +18,7 @@ export const ConnectModal = () => {
   } = useConnect()
 
   const { activeChain, switchNetwork } = useNetwork()
-  const { data, isFetching, refetch } = useRegisteredUser()
+  const { data, isFetching, isError, refetch } = useRegisteredUser()
 
   const isMvmChain = activeChain?.id === mvmChainId
 
@@ -35,8 +35,8 @@ export const ConnectModal = () => {
       </Row>
       <Row>
         <div>registered:</div>
-        <RoundedButton disabled={!!data || isFetching} onClick={() => refetch()}>
-          {data ? "registered" : isFetching ? "registering" : "register"}
+        <RoundedButton disabled={isFetching || !isError} onClick={() => refetch()}>
+          {isError ? "registered" : isFetching ? "registering" : "register"}
         </RoundedButton>
       </Row>
       <Row>
