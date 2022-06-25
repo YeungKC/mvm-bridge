@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom"
 import { Spinner } from "../components/common/Spinner"
-import { useAsset, useDeposits } from "../service/hook"
+import { useAsset, useDeposits, useRegisteredUser } from "../service/hook"
 import { DepositRequest, ExternalTransactionResponse } from "@mixin.dev/mixin-node-sdk/dist/client/types/external"
 import dayjs from "dayjs"
 import { useMemo } from "react"
@@ -17,6 +17,7 @@ export const Asset = () => {
   const { data, isFetching } = useAsset(assetId)
 
   const [addressDialogOpened, addressDialogOpenedToggle] = useToggle(false)
+  const [mixinDialogOpened, mixinDialogOpenedToggle] = useToggle(false)
 
   if (isFetching)
     return (
@@ -32,11 +33,15 @@ export const Asset = () => {
           {data?.symbol} ({data?.name})
         </div>
 
-        <RoundedButton onClick={addressDialogOpenedToggle}>Address</RoundedButton>
+        <div className="flex flex-row gap-2">
+          <RoundedButton onClick={addressDialogOpenedToggle}>Transfer address</RoundedButton>
+          <RoundedButton onClick={mixinDialogOpenedToggle}>Transfer via Mixin</RoundedButton>
+        </div>
 
         <Depositing />
       </div>
       <AddressDialog isOpen={addressDialogOpened} onDismiss={addressDialogOpenedToggle} />
+      <TransferViaMixinDialog isOpen={mixinDialogOpened} onDismiss={mixinDialogOpenedToggle} />
     </>
   )
 }
@@ -51,6 +56,22 @@ const AddressDialog = ({ isOpen, onDismiss }: { isOpen: boolean; onDismiss: () =
       <div>Transfer</div>
       <span className=" text-slate-500">{data?.destination}</span>
       <QRCodeSVG value={data?.destination ?? ""} size={256} />
+    </DialogModal>
+  )
+}
+
+const TransferViaMixinDialog = ({ isOpen, onDismiss }: { isOpen: boolean; onDismiss: () => void }) => {
+  const { data } = useRegisteredUser()
+
+  const address = `mixin://transfer/${data?.user_id}`
+
+  return (
+    <DialogModal isOpen={isOpen} onDismiss={() => onDismiss()} containerClassName="gap-2">
+      <div>Transfer</div>
+      <a href={address} className=" text-slate-500 text-center underline">
+        {address}
+      </a>
+      <QRCodeSVG value={address ?? ""} size={256} />
     </DialogModal>
   )
 }
