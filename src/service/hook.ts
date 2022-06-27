@@ -2,12 +2,13 @@ import { QueryClient, useQueries, useQuery, useQueryClient } from "react-query"
 import { persistQueryClient } from "react-query/persistQueryClient-experimental"
 import { createWebStoragePersistor } from "react-query/createWebStoragePersistor-experimental"
 import axios from "axios"
-import { useAccount } from "wagmi"
-import { AssetResponse, MixinApi } from "@mixin.dev/mixin-node-sdk"
+import { useAccount, useBalance, useContractRead } from "wagmi"
+import { AssetResponse, MixinApi, RegistryABI } from "@mixin.dev/mixin-node-sdk"
 import { DepositRequest } from "@mixin.dev/mixin-node-sdk/dist/client/types/external"
 import { difference, flatten, sortBy } from "lodash"
 import { useMemo } from "react"
 import dayjs from "dayjs"
+import { XIN_ASSET_ID } from "../constant"
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -172,4 +173,57 @@ export const useAllDeposits = () => {
       .map((e) => e!)
     return sortBy(deposits, (e) => -dayjs(e.created_at).valueOf())
   }, [queriesResults])
+}
+
+export const useAssetContract = (assetId: string, enabled?: boolean) => {
+  const { data } = useAsset(assetId)
+
+  const id = useMemo(() => {
+    return `0x${assetId.replaceAll("-", "")}`
+  }, [assetId])
+
+  const result = useContractRead(
+    {
+      addressOrName: "0x3c84B6C98FBeB813e05a7A7813F0442883450B1F",
+      contractInterface: RegistryABI.abi,
+    },
+    "contracts",
+    {
+      args: id,
+      cacheTime: Infinity,
+      staleTime: 1000 * 60 * 60 * 24,
+      enabled: !!data && (enabled ?? true),
+    }
+  )
+
+  return {
+    ...result,
+    data: result.data as unknown as string | undefined,
+  }
+}
+
+export const useMvmBalance = (assetId: string) => {
+  const account = useAccount()
+  const { data } = useAssetContract(assetId)
+
+  const balance = useBalance({
+    addressOrName: account?.data?.address,
+    formatUnits: 18,
+    cacheTime: Infinity,
+    staleTime: 1000 * 60,
+    enabled: assetId === XIN_ASSET_ID,
+  })
+
+  const tokenBalance = useBalance({
+    addressOrName: account?.data?.address,
+    token: data,
+    formatUnits: 8,
+    cacheTime: Infinity,
+    staleTime: 1000 * 60,
+    enabled: assetId !== XIN_ASSET_ID && !!data,
+  })
+
+  if (assetId === XIN_ASSET_ID) return balance
+
+  return tokenBalance
 }

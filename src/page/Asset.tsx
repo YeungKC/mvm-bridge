@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom"
 import { Spinner } from "../components/common/Spinner"
-import { useAsset, useDeposits, useRegisteredUser } from "../service/hook"
-import { DepositRequest, ExternalTransactionResponse } from "@mixin.dev/mixin-node-sdk/dist/client/types/external"
+import { useAsset, useMvmBalance, useDeposits, useRegisteredUser } from "../service/hook"
+import { ExternalTransactionResponse } from "@mixin.dev/mixin-node-sdk"
 import dayjs from "dayjs"
 import { useMemo } from "react"
 import relativeTime from "dayjs/plugin/relativeTime"
@@ -10,12 +10,15 @@ import { DialogModal } from "../components/common/Modal"
 import { useToggle } from "react-use"
 import { QRCodeSVG } from "qrcode.react"
 import RoundedItem from "../components/RoundedItem"
+import { DepositRequest } from "@mixin.dev/mixin-node-sdk/dist/client/types/external"
 
 export const Asset = () => {
   const params = useParams()
   const assetId = params["assetId"]!
 
   const { data, isFetching } = useAsset(assetId)
+  const { data: balance } = useMvmBalance(assetId)
+  console.log(balance)
 
   const [addressDialogOpened, addressDialogOpenedToggle] = useToggle(false)
   const [mixinDialogOpened, mixinDialogOpenedToggle] = useToggle(false)
@@ -32,6 +35,10 @@ export const Asset = () => {
         <img alt="icon" src={data?.icon_url} width={64} height={64} />
         <div>
           {data?.symbol} ({data?.name})
+        </div>
+
+        <div className=" font-semibold text-xl">
+          {balance?.formatted} {data?.symbol}
         </div>
 
         <div className="flex flex-row gap-2">

@@ -1,6 +1,7 @@
-import { Chain, createClient, createStorage } from "wagmi"
+import { Chain, configureChains, createClient, createStorage } from "wagmi"
 import { InjectedConnector } from "wagmi/connectors/injected"
 import { WalletConnectConnector } from "wagmi/connectors/walletConnect"
+import { jsonRpcProvider } from "wagmi/providers/jsonRpc"
 
 const chains: Chain[] = [
   {
@@ -9,7 +10,7 @@ const chains: Chain[] = [
     blockExplorers: {
       default: {
         name: "Mixin Virtual Machine",
-        url: "https://scan.mvm.dev/",
+        url: "https://scan.mvm.dev",
       },
     },
     rpcUrls: {
@@ -26,6 +27,12 @@ const chains: Chain[] = [
 
 export const mvmChainId = chains[0].id
 
+const { provider } = configureChains(chains, [
+  jsonRpcProvider({
+    rpc: (chain) => ({ http: chain.rpcUrls.default }),
+  }),
+])
+
 const web3client = createClient({
   autoConnect: true,
   storage: createStorage({ storage: window.localStorage }),
@@ -38,6 +45,7 @@ const web3client = createClient({
       },
     }),
   ],
+  provider: provider,
 })
 
 export default web3client
