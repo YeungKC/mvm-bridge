@@ -18,7 +18,6 @@ export const Asset = () => {
 
   const { data, isFetching } = useAsset(assetId)
   const { data: balance } = useMvmBalance(assetId)
-  console.log(balance)
 
   const [addressDialogOpened, addressDialogOpenedToggle] = useToggle(false)
   const [mixinDialogOpened, mixinDialogOpenedToggle] = useToggle(false)

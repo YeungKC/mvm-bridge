@@ -15,7 +15,7 @@ export const Assets = () => {
       <div className=" text-lg font-bold">Top Assets</div>
       <div>
         {data?.map((e, i) => (
-          <RoundedItem $as={Link} to={`/asset/${e.asset_id}`}>
+          <RoundedItem key={e.asset_id} $as={Link} to={`/asset/${e.asset_id}`}>
             <img alt="icon" src={e.icon_url} width={38} height={38} />
             <div className="font-bold">{e.symbol}</div>
           </RoundedItem>
