@@ -46,7 +46,7 @@
     "build": "craco build",
     "test": "craco test",
     "eject": "react-scripts eject",
-    "lint": "eslint . && prettier --check .",
+    "lint": "eslint --fix . && prettier --check .",
     "format": "prettier --write ."
   },
   "browserslist": {
