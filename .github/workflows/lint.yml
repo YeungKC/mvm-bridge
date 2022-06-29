@@ -36,5 +36,4 @@ jobs:
       - name: Install dependencies
         run: pnpm i
 
-      - name: Run CI
-        run: pnpm lint
+      - run: pnpm lint
