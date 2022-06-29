@@ -33,7 +33,7 @@
     "react-use": "^17.4.0",
     "stream-browserify": "^3.0.0",
     "stream-http": "^3.2.0",
-    "tailwind-styled-components": "2.1.6",
+    "tailwind-styled-components": "2.1.8",
     "tls": "^0.0.1",
     "typescript": "^4.4.2",
     "url": "^0.11.0",
