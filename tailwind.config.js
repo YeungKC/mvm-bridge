@@ -14,10 +14,8 @@ module.exports = {
       center: true,
     },
     extend: {
-      colors: {
-      },
+      colors: {},
     },
   },
   plugins: [],
-};
-
+}

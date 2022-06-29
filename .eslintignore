@@ -1,0 +1,6 @@
+.eslintrc.js
+build
+craco.config.js
+postcss.config.js
+tailwind.config.js
+prettier.config.js

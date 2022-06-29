@@ -1,14 +1,15 @@
-import { QueryClient, useQueries, useQuery, useQueryClient } from "react-query"
-import { persistQueryClient } from "react-query/persistQueryClient-experimental"
-import { createWebStoragePersistor } from "react-query/createWebStoragePersistor-experimental"
-import axios from "axios"
-import { useAccount, useBalance, useContractRead } from "wagmi"
-import { AssetResponse, MixinApi, RegistryABI } from "@mixin.dev/mixin-node-sdk"
-import { DepositRequest } from "@mixin.dev/mixin-node-sdk/dist/client/types/external"
-import { difference, flatten, sortBy } from "lodash"
-import { useMemo } from "react"
-import dayjs from "dayjs"
-import { XIN_ASSET_ID } from "../constant"
+import { AssetResponse, MixinApi, RegistryABI } from '@mixin.dev/mixin-node-sdk'
+import { DepositRequest } from '@mixin.dev/mixin-node-sdk/dist/client/types/external'
+import axios from 'axios'
+import dayjs from 'dayjs'
+import { difference, flatten, sortBy } from 'lodash'
+import { useMemo } from 'react'
+import { QueryClient, useQueries, useQuery, useQueryClient } from 'react-query'
+import { createWebStoragePersistor } from 'react-query/createWebStoragePersistor-experimental'
+import { persistQueryClient } from 'react-query/persistQueryClient-experimental'
+import { useAccount, useBalance, useContractRead } from 'wagmi'
+
+import { XIN_ASSET_ID } from '../constant'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -22,6 +23,7 @@ const localStoragePersistor = createWebStoragePersistor({
   storage: window.localStorage,
 })
 
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
 persistQueryClient({
   queryClient,
   persistor: localStoragePersistor,
@@ -45,20 +47,22 @@ interface RegisteredUser {
 export const useRegisteredUser = () => {
   const { data } = useAccount()
   const address = data?.address
-  return useQuery<RegisteredUser>(
-    ["register", address],
+  return useQuery(
+    ['register', address],
     async () => {
       if (!address) return
-      return (
-        await axios.post("https://bridge.mvm.dev/users", {
+      const response = await axios.post<{ user: RegisteredUser }>(
+        'https://bridge.mvm.dev/users',
+        {
           public_key: address,
-        })
-      ).data.user
+        },
+      )
+      return response.data.user
     },
     {
       cacheTime: Infinity,
       staleTime: 1000 * 60 * 5,
-    }
+    },
   )
 }
 
@@ -77,7 +81,7 @@ export const useMe = () => {
   const { data } = useRegisteredUser()
 
   const api = useMixinApi()
-  return useQuery(["me", data?.user_id], () => api!.user.profile(), {
+  return useQuery(['me', data?.user_id], () => api?.user.profile(), {
     cacheTime: Infinity,
     staleTime: 1000 * 60 * 5,
     enabled: !!api,
@@ -88,7 +92,7 @@ export const useAssets = () => {
   const { data } = useRegisteredUser()
 
   const api = useMixinApi()
-  return useQuery(["assets", data?.user_id], () => api!.asset.fetchList(), {
+  return useQuery(['assets', data?.user_id], () => api?.asset.fetchList(), {
     cacheTime: Infinity,
     enabled: !!api,
   })
@@ -98,36 +102,53 @@ export const useAsset = (assetId: string) => {
   const { data } = useRegisteredUser()
 
   const api = useMixinApi()
-  return useQuery(["asset", data?.user_id, assetId], () => api!.asset.fetch(assetId), {
-    cacheTime: Infinity,
-    staleTime: 1000 * 60 * 5,
-    enabled: !!api,
-  })
+  return useQuery(
+    ['asset', data?.user_id, assetId],
+    () => api?.asset.fetch(assetId),
+    {
+      cacheTime: Infinity,
+      staleTime: 1000 * 60 * 5,
+      enabled: !!api,
+    },
+  )
 }
 
 export const useTopAssets = () => {
   const api = MixinApi()
-  return useQuery(["topAsset"], () => api!.network.topAssets(), {
+  return useQuery(['topAsset'], () => api.network.topAssets(), {
     cacheTime: Infinity,
     staleTime: 1000 * 60 * 5,
     enabled: !!api,
   })
 }
 
-export const useDeposits = (request: Partial<Omit<DepositRequest, "offset">>, { enable }: { enable?: boolean } = {}) => {
+export const useDeposits = (
+  request: Partial<Omit<DepositRequest, 'offset'>>,
+  { enable }: { enable?: boolean } = {},
+) => {
   const { data } = useRegisteredUser()
 
   const api = useMixinApi()
 
-  return useQuery(["deposits", data?.user_id, request], () => api!.external.deposits({ ...request, limit: request.limit || 500 } as unknown as DepositRequest), {
-    enabled: !!api && (enable ?? true),
-    refetchInterval: 1000 * 6,
-  })
+  return useQuery(
+    ['deposits', data?.user_id, request],
+    () =>
+      api?.external.deposits({
+        ...request,
+        limit: request.limit ?? 500,
+      } as unknown as DepositRequest),
+    {
+      enabled: !!api && (enable ?? true),
+      refetchInterval: 1000 * 6,
+    },
+  )
 }
 
 export const useCacheAssets = () => {
   const { data: user } = useRegisteredUser()
-  const queries = useQueryClient().getQueryCache().findAll(["asset", user?.user_id])
+  const queries = useQueryClient()
+    .getQueryCache()
+    .findAll(['asset', user?.user_id])
 
   const assets = queries
     .map((e) => e.state.data)
@@ -151,25 +172,30 @@ export const useAllDeposits = () => {
           asset: e.asset_id,
           destination: e.destination,
           tag: e.tag,
-        }))
+        })),
       ),
-    [cacheAssets, assets]
+    [cacheAssets, assets],
   )
 
   const queriesResults = useQueries(
     requests.map((request) => {
       return {
-        queryKey: ["deposits", data?.user_id, request],
-        queryFn: () => api!.external.deposits({ ...request, limit: 500 } as unknown as DepositRequest),
-        enabled: !!api && !!request?.destination,
+        queryKey: ['deposits', data?.user_id, request],
+        queryFn: () =>
+          api?.external.deposits({
+            ...request,
+            limit: 500,
+          } as unknown as DepositRequest),
+        enabled: !!api && !!request.destination,
         refetchInterval: 1000 * 12,
       }
-    })
+    }),
   )
 
   return useMemo(() => {
     const deposits = flatten(queriesResults.map((e) => e.data))
       .filter((e) => !!e)
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       .map((e) => e!)
     return sortBy(deposits, (e) => -dayjs(e.created_at).valueOf())
   }, [queriesResults])
@@ -179,21 +205,22 @@ export const useAssetContract = (assetId: string, enabled?: boolean) => {
   const { data } = useAsset(assetId)
 
   const id = useMemo(() => {
-    return `0x${assetId.replaceAll("-", "")}`
+    return `0x${assetId.replaceAll('-', '')}`
   }, [assetId])
 
   const result = useContractRead(
     {
-      addressOrName: "0x3c84B6C98FBeB813e05a7A7813F0442883450B1F",
+      addressOrName: '0x3c84B6C98FBeB813e05a7A7813F0442883450B1F',
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       contractInterface: RegistryABI.abi,
     },
-    "contracts",
+    'contracts',
     {
       args: id,
       cacheTime: Infinity,
       staleTime: 1000 * 60 * 60 * 24,
       enabled: !!data && (enabled ?? true),
-    }
+    },
   )
 
   return {
@@ -207,7 +234,7 @@ export const useMvmBalance = (assetId: string) => {
   const { data } = useAssetContract(assetId)
 
   const balance = useBalance({
-    addressOrName: account?.data?.address,
+    addressOrName: account.data?.address,
     formatUnits: 18,
     cacheTime: Infinity,
     staleTime: 1000 * 60,
@@ -215,7 +242,7 @@ export const useMvmBalance = (assetId: string) => {
   })
 
   const tokenBalance = useBalance({
-    addressOrName: account?.data?.address,
+    addressOrName: account.data?.address,
     token: data,
     formatUnits: 8,
     cacheTime: Infinity,

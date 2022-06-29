@@ -1,25 +1,25 @@
-import { Chain, configureChains, createClient, createStorage } from "wagmi"
-import { InjectedConnector } from "wagmi/connectors/injected"
-import { WalletConnectConnector } from "wagmi/connectors/walletConnect"
-import { jsonRpcProvider } from "wagmi/providers/jsonRpc"
+import { Chain, configureChains, createClient, createStorage } from 'wagmi'
+import { InjectedConnector } from 'wagmi/connectors/injected'
+import { WalletConnectConnector } from 'wagmi/connectors/walletConnect'
+import { jsonRpcProvider } from 'wagmi/providers/jsonRpc'
 
 const chains: Chain[] = [
   {
     id: 73927,
-    name: "Mixin Virtual Machine",
+    name: 'Mixin Virtual Machine',
     blockExplorers: {
       default: {
-        name: "Mixin Virtual Machine",
-        url: "https://scan.mvm.dev",
+        name: 'Mixin Virtual Machine',
+        url: 'https://scan.mvm.dev',
       },
     },
     rpcUrls: {
-      default: "https://geth.mvm.dev",
+      default: 'https://geth.mvm.dev',
     },
-    network: "Mixin Virtual Machine",
+    network: 'Mixin Virtual Machine',
     nativeCurrency: {
-      name: "Mixin",
-      symbol: "XIN",
+      name: 'Mixin',
+      symbol: 'XIN',
       decimals: 18,
     },
   },
