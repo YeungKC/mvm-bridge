@@ -10,6 +10,7 @@ module.exports = {
   jsxSingleQuote: true,
   trailingComma: 'all',
 
+  importOrder: ['^[./]'],
   importOrderSeparation: true,
   importOrderSortSpecifiers: true,
 }
