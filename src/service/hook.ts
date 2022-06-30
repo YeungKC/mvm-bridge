@@ -1,15 +1,23 @@
-import { AssetResponse, MixinApi, RegistryABI } from '@mixin.dev/mixin-node-sdk'
+import { AssetResponse, MixinApi, Registry } from '@mixin.dev/mixin-node-sdk'
 import { DepositRequest } from '@mixin.dev/mixin-node-sdk/dist/client/types/external'
 import axios from 'axios'
 import dayjs from 'dayjs'
-import { difference, flatten, sortBy } from 'lodash'
+import { difference, flatten, merge, sortBy } from 'lodash'
 import { useMemo } from 'react'
 import { QueryClient, useQueries, useQuery, useQueryClient } from 'react-query'
 import { createWebStoragePersistor } from 'react-query/createWebStoragePersistor-experimental'
 import { persistQueryClient } from 'react-query/persistQueryClient-experimental'
-import { useAccount, useBalance, useContractRead } from 'wagmi'
+import { useAccount, useBalance, useContractWrite } from 'wagmi'
+import BridgeABI from './abi/bridgeABI.json'
+import AssetABI from './abi/assetABI.json'
 
-import { XIN_ASSET_ID } from '../constant'
+import {
+  XIN_ASSET_ID,
+  REGISTRY_ADDRESS,
+  MVM_RPC_URI,
+  BRIDGE_ADDRESS,
+  EMPTY_ADDRESS,
+} from '../constant'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -33,6 +41,7 @@ persistQueryClient({
 export { queryClient }
 
 interface RegisteredUser {
+  contract: string
   created_at: string
   full_name: string
   user_id: string
@@ -61,7 +70,7 @@ export const useRegisteredUser = () => {
     },
     {
       cacheTime: Infinity,
-      staleTime: 1000 * 60 * 5,
+      staleTime: 1000 * 60,
     },
   )
 }
@@ -201,32 +210,41 @@ export const useAllDeposits = () => {
   }, [queriesResults])
 }
 
-export const useAssetContract = (assetId: string, enabled?: boolean) => {
+export const useAssetContract = (assetId: string) => {
   const { data } = useAsset(assetId)
 
-  const id = useMemo(() => {
-    return `0x${assetId.replaceAll('-', '')}`
-  }, [assetId])
-
-  const result = useContractRead(
+  return useQuery(
+    ['assetContract', data?.asset_id],
+    async () =>
+      (await new Registry({
+        address: REGISTRY_ADDRESS,
+        uri: MVM_RPC_URI,
+      }).fetchAssetContract(data?.asset_id ?? '')) as string,
     {
-      addressOrName: '0x3c84B6C98FBeB813e05a7A7813F0442883450B1F',
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-      contractInterface: RegistryABI.abi,
-    },
-    'contracts',
-    {
-      args: id,
+      enabled: !!data?.asset_id,
       cacheTime: Infinity,
       staleTime: 1000 * 60 * 60 * 24,
-      enabled: !!data && (enabled ?? true),
     },
   )
+}
 
-  return {
-    ...result,
-    data: result.data as unknown as string | undefined,
-  }
+export const useUserContract = (userId?: string) => {
+  return useQuery(
+    ['userContract', userId],
+    async () => {
+      const address = (await new Registry({
+        address: REGISTRY_ADDRESS,
+        uri: MVM_RPC_URI,
+      }).fetchUserContract(userId ?? '')) as string
+      if (address === EMPTY_ADDRESS) throw new Error('User not found')
+      return address
+    },
+    {
+      enabled: !!userId,
+      cacheTime: Infinity,
+      staleTime: 1000 * 60,
+    },
+  )
 }
 
 export const useMvmBalance = (assetId: string) => {
@@ -237,7 +255,6 @@ export const useMvmBalance = (assetId: string) => {
     addressOrName: account.data?.address,
     formatUnits: 18,
     cacheTime: Infinity,
-    staleTime: 1000 * 60,
     enabled: assetId === XIN_ASSET_ID,
   })
 
@@ -246,7 +263,6 @@ export const useMvmBalance = (assetId: string) => {
     token: data,
     formatUnits: 8,
     cacheTime: Infinity,
-    staleTime: 1000 * 60,
     enabled: assetId !== XIN_ASSET_ID && !!data,
   })
 
@@ -254,3 +270,71 @@ export const useMvmBalance = (assetId: string) => {
 
   return tokenBalance
 }
+
+export const useUser = (userId: string | undefined) => {
+  const api = useMixinApi()
+  return useQuery(['user', userId], () => api?.user.fetch(userId ?? ''), {
+    enabled: !!api && !!userId,
+    cacheTime: Infinity,
+    staleTime: 1000 * 60,
+  })
+}
+
+export const useBridgeExtra = (payload: {
+  extra?: string
+  receivers?: string[]
+  threshold?: number
+}) =>
+  useQuery(
+    ['bridgeExtra', payload],
+    async () =>
+      '0x' +
+      (
+        await axios.post<{ extra: string }>('https://bridge.mvm.dev/extra', {
+          ...payload,
+          threshold: payload.threshold ?? 1,
+        })
+      ).data.extra,
+    {
+      cacheTime: Infinity,
+      staleTime: 1000 * 60 * 60 * 24,
+      enabled: !!payload.receivers?.length,
+    },
+  )
+
+export const useBridgeContractWrite = (
+  ...args: Parameters<typeof useContractWrite> extends [unknown, ...infer args]
+    ? args
+    : never
+) =>
+  useContractWrite(
+    {
+      addressOrName: BRIDGE_ADDRESS,
+      contractInterface: BridgeABI,
+    },
+    args[0],
+    merge(args[1], {
+      overrides: {
+        gasLimit: 21000 * 20,
+      },
+    }),
+  )
+
+export const useAssetContractWrite = (
+  address: string,
+  ...args: Parameters<typeof useContractWrite> extends [unknown, ...infer args]
+    ? args
+    : never
+) =>
+  useContractWrite(
+    {
+      addressOrName: address,
+      contractInterface: AssetABI,
+    },
+    args[0],
+    merge(args[1], {
+      overrides: {
+        gasLimit: 21000 * 20,
+      },
+    }),
+  )

@@ -2,6 +2,7 @@ import { Chain, configureChains, createClient, createStorage } from 'wagmi'
 import { InjectedConnector } from 'wagmi/connectors/injected'
 import { WalletConnectConnector } from 'wagmi/connectors/walletConnect'
 import { jsonRpcProvider } from 'wagmi/providers/jsonRpc'
+import { MVM_RPC_URI } from '../constant'
 
 const chains: Chain[] = [
   {
@@ -14,7 +15,7 @@ const chains: Chain[] = [
       },
     },
     rpcUrls: {
-      default: 'https://geth.mvm.dev',
+      default: MVM_RPC_URI,
     },
     network: 'Mixin Virtual Machine',
     nativeCurrency: {

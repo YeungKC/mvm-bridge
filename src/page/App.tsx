@@ -4,7 +4,7 @@
 import { Route, Routes } from 'react-router-dom'
 
 import AllDepositing from './AllDepositing'
-import { Asset } from './Asset'
+import Asset from './Asset'
 import Assets from './Assets'
 import ConnectModal from './ConnectModal'
 

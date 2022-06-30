@@ -25,30 +25,38 @@ export const AllDepositing = memo(() => {
   )
 })
 
-const Item = memo(({ data }: { data: ExternalTransactionResponse }) => {
-  const { data: asset } = useAsset(data.asset_id)
+const Item = memo(
+  ({
+    data,
+  }: {
+    data: Omit<ExternalTransactionResponse, 'created_at'> & {
+      created_at: string
+    }
+  }) => {
+    const { data: asset } = useAsset(data.asset_id)
 
-  const fromNow = useMemo(() => {
-    dayjs.extend(relativeTime)
-    return dayjs(data.created_at).fromNow()
-  }, [data.created_at])
+    const fromNow = useMemo(() => {
+      dayjs.extend(relativeTime)
+      return dayjs(data.created_at).fromNow()
+    }, [data.created_at])
 
-  return (
-    <RoundedItem className='justify-between'>
-      <div className=' flex flex-row items-center justify-center gap-3'>
-        <img alt='icon' src={asset?.icon_url} width={38} height={38} />
-        <div className='font-semibold'>
-          {data.amount} {asset?.symbol}
+    return (
+      <RoundedItem className='justify-between'>
+        <div className=' flex flex-row items-center justify-center gap-3'>
+          <img alt='icon' src={asset?.icon_url} width={38} height={38} />
+          <div className='font-semibold'>
+            {data.amount} {asset?.symbol}
+          </div>
         </div>
-      </div>
-      <div className='flex flex-col items-end text-sm text-slate-500 '>
-        <div>
-          {data.confirmations}/{data.threshold} confirmations
+        <div className='flex flex-col items-end text-sm text-slate-500 '>
+          <div>
+            {data.confirmations}/{data.threshold} confirmations
+          </div>
+          <div>{fromNow}</div>
         </div>
-        <div>{fromNow}</div>
-      </div>
-    </RoundedItem>
-  )
-})
+      </RoundedItem>
+    )
+  },
+)
 
 export default AllDepositing
