@@ -7,7 +7,7 @@ import { useMemo } from 'react'
 import { QueryClient, useQueries, useQuery, useQueryClient } from 'react-query'
 import { createWebStoragePersistor } from 'react-query/createWebStoragePersistor-experimental'
 import { persistQueryClient } from 'react-query/persistQueryClient-experimental'
-import { useAccount, useBalance, useContractWrite } from 'wagmi'
+import { useAccount, useBalance, useContractWrite, useSignMessage } from 'wagmi'
 import BridgeABI from './abi/bridgeABI.json'
 import AssetABI from './abi/assetABI.json'
 
@@ -18,6 +18,7 @@ import {
   BRIDGE_ADDRESS,
   EMPTY_ADDRESS,
 } from '../constant'
+import { keccak256, toUtf8Bytes } from 'ethers/lib/utils'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -56,22 +57,50 @@ interface RegisteredUser {
 export const useRegisteredUser = () => {
   const { data } = useAccount()
   const address = data?.address
+
+  const message = useMemo(
+    () =>
+      keccak256(
+        toUtf8Bytes(
+          `MVM:Bridge:Proxy:8MfEmL3g8s-PoDpZ4OcDCUDQPDiH4u1_OmxB0Aaknzg:${
+            address ?? ''
+          }`
+        )
+      ),
+    [address]
+  )
+  const { signMessageAsync } = useSignMessage({ message })
+
   return useQuery(
     ['register', address],
     async () => {
       if (!address) return
+      const signature = (await signMessageAsync()).slice(2)
+
+      console.log(
+        [
+          `address: ${address}`,
+          `original message: MVM:Bridge:Proxy:8MfEmL3g8s-PoDpZ4OcDCUDQPDiH4u1_OmxB0Aaknzg:${address}`,
+          `keccak256: ${message}`,
+          `signature: ${signature}`,
+        ].join('\n')
+      )
+
       const response = await axios.post<{ user: RegisteredUser }>(
-        'https://bridge.mvm.dev/users',
+        'https://bridge.pinstripe.mvm.dev/users',
         {
           public_key: address,
-        },
+          signature: signature,
+        }
       )
       return response.data.user
     },
     {
       cacheTime: Infinity,
       staleTime: 1000 * 60,
-    },
+      retry: false,
+      enabled: false,
+    }
   )
 }
 
@@ -118,7 +147,7 @@ export const useAsset = (assetId: string) => {
       cacheTime: Infinity,
       staleTime: 1000 * 60 * 5,
       enabled: !!api,
-    },
+    }
   )
 }
 
@@ -133,7 +162,7 @@ export const useTopAssets = () => {
 
 export const useDeposits = (
   request: Partial<Omit<DepositRequest, 'offset'>>,
-  { enable }: { enable?: boolean } = {},
+  { enable }: { enable?: boolean } = {}
 ) => {
   const { data } = useRegisteredUser()
 
@@ -149,7 +178,7 @@ export const useDeposits = (
     {
       enabled: !!api && (enable ?? true),
       refetchInterval: 1000 * 6,
-    },
+    }
   )
 }
 
@@ -181,9 +210,9 @@ export const useAllDeposits = () => {
           asset: e.asset_id,
           destination: e.destination,
           tag: e.tag,
-        })),
+        }))
       ),
-    [cacheAssets, assets],
+    [cacheAssets, assets]
   )
 
   const queriesResults = useQueries(
@@ -198,7 +227,7 @@ export const useAllDeposits = () => {
         enabled: !!api && !!request.destination,
         refetchInterval: 1000 * 12,
       }
-    }),
+    })
   )
 
   return useMemo(() => {
@@ -224,7 +253,7 @@ export const useAssetContract = (assetId: string) => {
       enabled: !!data?.asset_id,
       cacheTime: Infinity,
       staleTime: 1000 * 60 * 60 * 24,
-    },
+    }
   )
 }
 
@@ -243,7 +272,7 @@ export const useUserContract = (userId?: string) => {
       enabled: !!userId,
       cacheTime: Infinity,
       staleTime: 1000 * 60,
-    },
+    }
   )
 }
 
@@ -299,7 +328,7 @@ export const useBridgeExtra = (payload: {
       cacheTime: Infinity,
       staleTime: 1000 * 60 * 60 * 24,
       enabled: !!payload.receivers?.length,
-    },
+    }
   )
 
 export const useBridgeContractWrite = (
@@ -317,7 +346,7 @@ export const useBridgeContractWrite = (
       overrides: {
         gasLimit: 21000 * 20,
       },
-    }),
+    })
   )
 
 export const useAssetContractWrite = (
@@ -336,5 +365,5 @@ export const useAssetContractWrite = (
       overrides: {
         gasLimit: 21000 * 20,
       },
-    }),
+    })
   )
