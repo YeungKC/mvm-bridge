@@ -68,7 +68,7 @@
     "@types/assert": "^1.5.6",
     "@types/jest": "^28.1.4",
     "@types/lodash": "^4.14.182",
-    "@types/node": "^16.7.13",
+    "@types/node": "^18.0.3",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
     "@types/testing-library__jest-dom": "^5.14.5",
