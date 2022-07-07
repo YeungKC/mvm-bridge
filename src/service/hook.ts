@@ -54,8 +54,7 @@ interface RegisteredUser {
 }
 
 export const useRegisteredUser = () => {
-  const { data } = useAccount()
-  const address = data?.address
+  const { address } = useAccount()
   return useQuery(
     ['register', address],
     async () => {
@@ -248,18 +247,18 @@ export const useUserContract = (userId?: string) => {
 }
 
 export const useMvmBalance = (assetId: string) => {
-  const account = useAccount()
+  const { address } = useAccount()
   const { data } = useAssetContract(assetId)
 
   const balance = useBalance({
-    addressOrName: account.data?.address,
+    addressOrName: address,
     formatUnits: 18,
     cacheTime: Infinity,
     enabled: assetId === XIN_ASSET_ID,
   })
 
   const tokenBalance = useBalance({
-    addressOrName: account.data?.address,
+    addressOrName: address,
     token: data,
     formatUnits: 8,
     cacheTime: Infinity,
@@ -303,38 +302,35 @@ export const useBridgeExtra = (payload: {
   )
 
 export const useBridgeContractWrite = (
-  ...args: Parameters<typeof useContractWrite> extends [unknown, ...infer args]
-    ? args
-    : never
+  arg: Omit<
+    Parameters<typeof useContractWrite>[0],
+    'addressOrName' | 'contractInterface'
+  >,
 ) =>
   useContractWrite(
-    {
-      addressOrName: BRIDGE_ADDRESS,
-      contractInterface: BridgeABI,
-    },
-    args[0],
-    merge(args[1], {
-      overrides: {
-        gasLimit: 21000 * 20,
+    merge(
+      {
+        addressOrName: BRIDGE_ADDRESS,
+        contractInterface: BridgeABI,
+        overrides: {
+          gasLimit: 21000 * 20,
+        },
       },
-    }),
+      arg,
+    ),
   )
 
 export const useAssetContractWrite = (
-  address: string,
-  ...args: Parameters<typeof useContractWrite> extends [unknown, ...infer args]
-    ? args
-    : never
+  arg: Omit<Parameters<typeof useContractWrite>[0], 'contractInterface'>,
 ) =>
   useContractWrite(
-    {
-      addressOrName: address,
-      contractInterface: AssetABI,
-    },
-    args[0],
-    merge(args[1], {
-      overrides: {
-        gasLimit: 21000 * 20,
+    merge(
+      {
+        contractInterface: AssetABI,
+        overrides: {
+          gasLimit: 21000 * 20,
+        },
       },
-    }),
+      arg,
+    ),
   )

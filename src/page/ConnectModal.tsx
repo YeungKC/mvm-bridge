@@ -1,6 +1,6 @@
 import { memo, useCallback } from 'react'
 import tw from 'tailwind-styled-components'
-import { useAccount, useConnect, useNetwork } from 'wagmi'
+import { useAccount, useConnect, useNetwork, useSwitchNetwork } from 'wagmi'
 
 import { DialogModal } from '../components/common/Modal'
 import RoundedButton from '../components/common/RoundedButton'
@@ -10,24 +10,23 @@ import { mvmChainId } from '../service/web3client'
 const Row = tw.div`flex flex-row items-center justify-between gap-2`
 
 export const ConnectModal = memo(() => {
-  const account = useAccount()
+  const { address, status, isConnected } = useAccount()
 
   const {
     connect,
     connectors: [connector],
-    isConnected,
-    status,
   } = useConnect()
 
-  const { activeChain, switchNetwork } = useNetwork()
+  const { chain } = useNetwork()
+  const { switchNetwork } = useSwitchNetwork()
   const { data, isFetching, isError, refetch } = useRegisteredUser()
 
-  const isMvmChain = activeChain?.id === mvmChainId
+  const isMvmChain = chain?.id === mvmChainId
 
-  const isOpen = !account.data || !isConnected || !isMvmChain || !data
+  const isOpen = !address || !isConnected || !isMvmChain || !data
 
   const connectCallback = useCallback(
-    () => connect(connector),
+    () => connect({ connector }),
     [connect, connector],
   )
   const register = useCallback(() => refetch(), [refetch])

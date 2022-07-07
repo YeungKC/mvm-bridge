@@ -7,7 +7,7 @@ specifiers:
   '@tailwindcss/forms': ^0.5.2
   '@testing-library/jest-dom': ^5.14.1
   '@testing-library/react': ^13.0.0
-  '@testing-library/user-event': ^13.2.1
+  '@testing-library/user-event': ^14.2.1
   '@trivago/prettier-plugin-sort-imports': ^3.2.0
   '@types/assert': ^1.5.6
   '@types/jest': ^27.0.1
@@ -58,7 +58,7 @@ specifiers:
   typescript: ^4.4.2
   url: ^0.11.0
   utf-8-validate: ^5.0.9
-  wagmi: ^0.4.12
+  wagmi: 0.5.6
   web-vitals: ^2.1.0
 
 dependencies:
@@ -67,7 +67,7 @@ dependencies:
   '@reach/dialog': 0.17.0_twyhzqqpkwvvgrmyeapdo6i4my
   '@testing-library/jest-dom': 5.16.4
   '@testing-library/react': 13.3.0_biqbaboplfbrettd7655fr4n2y
-  '@testing-library/user-event': 13.5.0
+  '@testing-library/user-event': 14.2.1
   assert: 2.0.0
   axios: 0.27.2
   browserify-zlib: 0.2.0
@@ -98,7 +98,7 @@ dependencies:
   typescript: 4.7.4
   url: 0.11.0
   utf-8-validate: 5.0.9
-  wagmi: 0.4.12_ikxv2wrlnaeniwjcejboiovnxa
+  wagmi: 0.5.6_ikxv2wrlnaeniwjcejboiovnxa
   web-vitals: 2.1.4
 
 devDependencies:
@@ -1919,6 +1919,7 @@ packages:
     engines: { node: '>=6.9.0' }
     dependencies:
       regenerator-runtime: 0.13.9
+    dev: false
 
   /@babel/template/7.16.7:
     resolution:
@@ -3611,16 +3612,14 @@ packages:
       react-dom: 18.2.0_react@18.2.0
     dev: false
 
-  /@testing-library/user-event/13.5.0:
+  /@testing-library/user-event/14.2.1:
     resolution:
       {
-        integrity: sha512-5Kwtbo3Y/NowpkbRuSepbyMFkZmHgD+vPzYB/RJ4oxt5Gj/avFFBYjhw27cqSVPVw/3a67NK1PbiIr9k4Gwmdg==,
+        integrity: sha512-HOr1QiODrq+0j9lKU5i10y9TbhxMBMRMGimNx10asdmau9cb8Xb1Vyg0GvTwyIL2ziQyh2kAloOtAQFBQVuecA==,
       }
-    engines: { node: '>=10', npm: '>=6' }
+    engines: { node: '>=12', npm: '>=6' }
     peerDependencies:
       '@testing-library/dom': '>=7.21.4'
-    dependencies:
-      '@babel/runtime': 7.18.3
 
   /@tootallnate/once/1.1.2:
     resolution:
@@ -4139,7 +4138,7 @@ packages:
       }
     deprecated: This is a stub types definition. testing-library__user-event provides its own type definitions, so you do not need this installed.
     dependencies:
-      '@testing-library/user-event': 13.5.0
+      '@testing-library/user-event': 14.2.1
     transitivePeerDependencies:
       - '@testing-library/dom'
     dev: true
@@ -4432,13 +4431,13 @@ packages:
       '@typescript-eslint/types': 5.30.0
       eslint-visitor-keys: 3.3.0
 
-  /@wagmi/core/0.3.8_2ocw4wf2kb3i6lf4ct7nhauhqu:
+  /@wagmi/core/0.4.7_2ocw4wf2kb3i6lf4ct7nhauhqu:
     resolution:
       {
-        integrity: sha512-9wsd8YGW2ivjFwpkgAETn7cRbKOAddZz91vuh2VmIP2bWGiDuFA6RXy5/KLV/tGpvIIiCyGFO0JXpx+n4hFhgQ==,
+        integrity: sha512-YpD9bxE22qV1vhCKDy18Yq5B6ArRRH15XpMnZhB/1Hdbk9nLK1heSJ1HoCetn1uCxrdUByTAzlmuxL3FbeXM5A==,
       }
     peerDependencies:
-      '@coinbase/wallet-sdk': '>=3.2.0'
+      '@coinbase/wallet-sdk': '>=3.3.0'
       '@walletconnect/ethereum-provider': '>=1.7.5'
       ethers: '>=5.5.1'
     peerDependenciesMeta:
@@ -11617,7 +11616,10 @@ packages:
     dev: false
 
   /nano-time/1.0.0:
-    resolution: { integrity: sha1-sFVPaa2J4i0JB/ehKwmTpdlhN+8= }
+    resolution:
+      {
+        integrity: sha512-flnngywOoQ0lLQOTRNexn2gGSNuM9bKj9RZAWSzhQ+UJYaAFG9bac4DW9VHjUAzrOaIcajHybCTHe/bkvozQqA==,
+      }
     dependencies:
       big-integer: 1.6.51
     dev: false
@@ -14123,6 +14125,7 @@ packages:
       {
         integrity: sha512-p3VT+cOEgxFsRRA9X4lkI1E+k2/CtnKtU4gcxyaCUreilL/vqI6CdZ3wxVUx3UOUg+gnUOQQcRI7BmSI656MYA==,
       }
+    dev: false
 
   /regenerator-transform/0.15.0:
     resolution:
@@ -14199,7 +14202,10 @@ packages:
     dev: false
 
   /remove-accents/0.4.2:
-    resolution: { integrity: sha1-CkPTqq4egNuRngeuJUsoXZ4ce7U= }
+    resolution:
+      {
+        integrity: sha512-7pXIJqJOq5tFgG1A2Zxti3Ht8jJF337m4sowbuHsW30ZnkQFnDzy9qBNhgzX8ZLW4+UBcXiiR7SwR6pokHsxiA==,
+      }
     dev: false
 
   /renderkid/3.0.0:
@@ -16187,17 +16193,17 @@ packages:
       xml-name-validator: 3.0.0
     dev: false
 
-  /wagmi/0.4.12_ikxv2wrlnaeniwjcejboiovnxa:
+  /wagmi/0.5.6_ikxv2wrlnaeniwjcejboiovnxa:
     resolution:
       {
-        integrity: sha512-YfpRAJyGL9YvtecYDf6cUT6yaIBksHK9JZyq3WlVMUfeTleFmsqCiIaIaKhlPcE+NZxSsUHz1jbZw8KLWTcwvA==,
+        integrity: sha512-Y3mTZObLBWGxMgFRR5g4qD8G8C3LFgfrt5anseAhVVrtn0O9btN/s3yTzrC6Tf+Una1rgpJydUnaQashZ9IsCg==,
       }
     peerDependencies:
       ethers: '>=5.5.1'
       react: '>=17.0.0'
     dependencies:
       '@coinbase/wallet-sdk': 3.3.0
-      '@wagmi/core': 0.3.8_2ocw4wf2kb3i6lf4ct7nhauhqu
+      '@wagmi/core': 0.4.7_2ocw4wf2kb3i6lf4ct7nhauhqu
       '@walletconnect/ethereum-provider': 1.7.8_22kvxa7zeyivx4jp72v2w3pkvy
       ethers: 5.6.9_22kvxa7zeyivx4jp72v2w3pkvy
       react: 18.2.0

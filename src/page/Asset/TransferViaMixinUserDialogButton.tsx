@@ -88,7 +88,8 @@ const useTransfer = (onUserNotFound: () => void) => {
     isIdle: isTransferXinIdle,
     error: transferXinError,
     reset: transferXinReset,
-  } = useBridgeContractWrite('release', {
+  } = useBridgeContractWrite({
+    functionName: 'release',
     args: [userContract, extra],
     overrides: {
       value: overrideValue,
@@ -102,7 +103,9 @@ const useTransfer = (onUserNotFound: () => void) => {
     isIdle: isTransferERC20Idle,
     error: transferERC20Error,
     reset: transferERC20Reset,
-  } = useAssetContractWrite(assetContractAddress ?? '', 'transferWithExtra', {
+  } = useAssetContractWrite({
+    addressOrName: assetContractAddress ?? '',
+    functionName: 'transferWithExtra',
     args: [userContract, value, extra],
   })
 
