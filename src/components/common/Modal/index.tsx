@@ -11,8 +11,9 @@ import {
   Target,
   TargetAndTransition,
   motion,
+  CustomDomComponent,
 } from 'framer-motion'
-import { memo, useEffect, useRef } from 'react'
+import { memo, useEffect, useRef, ReactNode } from 'react'
 import { usePrevious } from 'react-use'
 
 type PropsType = {
@@ -50,7 +51,11 @@ const modalExit = {
 }
 
 const AnimatedDialogOverlay = motion(DialogOverlay)
-const AnimatedDialogContent = motion(DialogContent)
+// fix children prop type not found
+const AnimatedDialogContent = motion(DialogContent) as CustomDomComponent<{
+  children: ReactNode
+  className: string
+}>
 
 export const Modal = memo(
   ({
