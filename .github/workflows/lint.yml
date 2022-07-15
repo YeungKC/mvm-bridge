@@ -12,8 +12,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: borales/actions-yarn@v3.0.0
         with:
-          node-version: 16
-      - run: npm i
-      - run: npm run lint
+          cmd: install
+      - uses: borales/actions-yarn@v3.0.0
+        with:
+          cmd: lint
